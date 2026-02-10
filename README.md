@@ -116,29 +116,68 @@ NEXT_PUBLIC_BETTER_AUTH_URL=http://localhost:3000
 ## System Flowchart
 
 ```mermaid
-graph TD
-    A[Start] --> B{User Access}
-    B -->|Unauthenticated| C[Sign In Page]
-    B -->|Authenticated| D{Check User Role}
-    
-    C --> E[Enter Credentials]
-    E --> F{Better Auth Verification}
-    F -->|Success| D
-    F -->|Failure| G[Show Error Message]
-    G --> C
-    
-    D -->|ROLE: SUPER_ADMIN| H[Admin Dashboard]
-    D -->|ROLE: TEACHER| I[Teacher Dashboard]
-    D -->|ROLE: STUDENT| J[Student Dashboard]
-    
-    H --> H1[User Management]
-    H --> H2[System Overview]
-    
-    I --> I1[Class Management]
-    I --> I2[Student Progress]
-    
-    J --> J1[View Schedule]
-    J --> J2[Submit Assignments]
+flowchart TD
+    %% 1. Development Phase
+    subgraph Dev_Phase [🛠️ Development Phase]
+        Start((Start)) --> EnvSetup[Setup .env Variables]
+        EnvSetup --> Install[Install Dependencies]
+        Install --> DB_Up[Start Database (Docker)]
+        DB_Up --> Schema[Push Drizzle Schema]
+        Schema --> Seed[Seed Initial Data]
+        Seed --> DevServer[Run Development Server]
+    end
+
+    %% 2. Application Flow
+    subgraph App_Flow [💻 Application Logic]
+        DevServer --> Access{User Access}
+        Access -->|No Session| Login[Sign In Page]
+        
+        Login --> Creds[Enter Creds]
+        Creds --> Verify{Better Auth}
+        Verify -->|Invalid| Error[Show Error] --> Login
+        Verify -->|Valid| Session[Create Session]
+        
+        Session --> RoleCheck{Check Role}
+        
+        %% Admin Features
+        RoleCheck -->|Admin| AdminDash[Purple Dashboard]
+        AdminDash --> UM[User Management]
+        AdminDash --> SO[System Overview]
+        AdminDash --> Logs[Audit Logs]
+        
+        %% Teacher Features
+        RoleCheck -->|Teacher| TeachDash[Dark Dashboard]
+        TeachDash --> CM[Class Management]
+        TeachDash --> Grade[Grading System]
+        TeachDash --> Att[Attendance Tracking]
+        
+        %% Student Features
+        RoleCheck -->|Student| StudDash[Blue Dashboard]
+        StudDash --> Sched[View Schedule]
+        StudDash --> Assign[Submit Assignments]
+        StudDash --> Grades[View Grades]
+    end
+
+    %% 3. Deployment Phase
+    subgraph Deploy_Phase [🚀 Deployment Phase]
+        BuildCode[npm run build]
+        BuildCode --> DockerBuild[Docker Build Image]
+        
+        DockerBuild --> Choice{Deployment Target}
+        
+        Choice -->|VPS/Docker| Compose[Docker Compose Up]
+        Compose --> ProdDB[Production DB]
+        Compose --> AppCont[App Container]
+        
+        Choice -->|Vercel| Vercel[Vercel Deploy]
+        Vercel --> ExtDB[External PostgreSQL (Supabase/Neon)]
+        
+        AppCont --> Live((Live App))
+        Vercel --> Live
+    end
+
+    %% Connect Phases
+    DevServer -.->|Ready to Ship| BuildCode
 ```
 
 ## Project Structure
