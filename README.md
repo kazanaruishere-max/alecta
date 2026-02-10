@@ -53,7 +53,7 @@ flowchart TD
         Seed -->|User: Admin, Guru, Siswa| DevServer[Run Development Server]
         
         %% Fitur AI Integration
-        DevServer --> AI_Config[Konfigurasi AI (OpenRouter)]
+        DevServer --> AI_Config[Konfigurasi AI - OpenRouter]
         AI_Config -->|Siap Digunakan| AppReady{Aplikasi Siap}
     end
 
